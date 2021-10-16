@@ -222,76 +222,81 @@ ReactDOM.render(<Game />, document.getElementById("root"))
 
 function calculateWinner(size = 3, squares) {
   const numOfStreaks = size < 5 ? 3 : 5 // board size < 5x5 => rule is 3 || 5 
-  const leng = size * size
-  const winPostions = []
-  for (let position = 0; position < leng; position++) {
-    if (!squares[position]) {
+  const leng = size * size || squares.length
+  let winPostions = []
+  let winCheck = false
+
+  for (let pos = 0; pos < leng; pos++) {
+    if (!squares[pos]) {
       continue
     }
-    let isWin = true
-    const winPostions = [position]
+    winCheck = true
+    winPostions = [pos]
     for (let point = 1; point < numOfStreaks; point++) {
       if (
-        position + point * (size + 1) > squares.length ||
-        squares[position] !== squares[position + point * (size + 1)]
+        pos + point * (size + 1) > leng ||
+        squares[pos] !== squares[pos + point * (size + 1)]
       ) {
-        isWin = false
+        winCheck = false
         break
       }
-      winPostions.push(position + point * (size + 1))
+      winPostions.push(pos + point * (size + 1))
     }
-    if (isWin) return winPostions
+    if (winCheck) return winPostions
   }
-  for (let position = 0; position < leng; position++) {
-    if (!squares[position] || position % size < (numOfStreaks - 1)) {
+
+  for (let pos = 0; pos < leng; pos++) {
+    if (!squares[pos] || pos % size < (numOfStreaks - 1)) {
       continue
     }
-    let isWin = true
-    const winPostions = [position]
+    winCheck = true
+    winPostions = [pos]
     for (let point = 1; point < numOfStreaks; point++) {
-      let nextPosition = position + point * (size - 1)
-      if (nextPosition < 0 || squares[position] !== squares[nextPosition]) {
-        isWin = false
+      let nextPosition = pos + point * (size - 1)
+      if (nextPosition < 0 || squares[pos] !== squares[nextPosition]) {
+        winCheck = false
         break
       }
       winPostions.push(nextPosition)
     }
-    if (isWin) return winPostions
+    if (winCheck) return winPostions
   }
+
   for (let i = 0; i < size; i++) {
     for (let j = 0; j < size - numOfStreaks + 1; j++) {
-      const position = i * size + j
-      if (!squares[position]) {
+      const pos = i * size + j
+      if (!squares[pos]) {
         continue
       }
-      let isWin = true
-      const winPostions = [position]
+      winCheck = true
+      winPostions = [pos]
       for (let point = 1; point < numOfStreaks; point++) {
-        if (squares[position] !== squares[position + point]) {
-          isWin = false
+        if (squares[pos] !== squares[pos + point]) {
+          winCheck = false
           break
         }
-        winPostions.push(position + point)
+        winPostions.push(pos + point)
       }
-      if (isWin) return winPostions
+      if (winCheck) return winPostions
     }
   }
+
   for (let j = 0; j < size - numOfStreaks + 1; j++) {
     for (let i = 0; i < size; i++) {
-      const position = j * size + i
-      if (!squares[position]) {
+      const pos = j * size + i
+      if (!squares[pos]) {
         continue
       }
-      let isWin = true
-      const winPostions = [position]
+      winCheck = true
+      winPostions = [pos]
       for (let point = 1; point < numOfStreaks; point++) {
-        if (squares[position] !== squares[position + point * size]) {
-          isWin = false
+        if (squares[pos] !== squares[pos + point * size]) {
+          winCheck = false
           break
         }
-        winPostions.push(position + point * size)
+        winPostions.push(pos + point * size)
       }
-      if (isWin) return winPostions
+      if (winCheck) return winPostions
     }
   }
 
