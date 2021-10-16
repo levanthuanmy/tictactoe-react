@@ -7,38 +7,28 @@ function Square(props) {
     <button className={props.styleSquare} onClick={props.onClick}>
       {props.value}
     </button>
-  )                                                                                                                                                                                                                                                                                      
+  )
 }
 
 class Board extends React.Component {
-  renderSquare(i) {
-    return (
-      <Square
-        value={this.props.squares[i]}
-        onClick={() => this.props.onClick(i)}
-        styleSquare={this.props.styleSquare[i]}
-      />
-    )
-  }
-  // Two loops to create the board! Took so long to do this so don't forget it!!!
   render() {
-
-    const rows = this.props.map.map((i) => {
-
-      var cells = i.map((j) => {
-        return (<label key={j.toString()}>{this.renderSquare(j)}</label>)
-      })
-      return (
-        <div key={i.toString()} className="board-row">
-          {cells}
-        </div>
-      )
-    })
-
     return (
-      <div>
-        {rows}
-      </div>
+      <>
+        {this.props.map.map((i) => (
+          <div key={i} className="board-row">
+            {i.map((j) => (
+              <label key={j}>
+                <Square
+                  value={this.props.squares[j]}
+                  onClick={() => this.props.onClick(j)}
+                  styleSquare={this.props.styleSquare[j]}
+                />
+              </label>
+            ))}
+          </div>
+        )
+        )}
+      </>
     )
   }
 }
@@ -96,9 +86,9 @@ class Game extends React.Component {
     const current = history[history.length - 1]
     const squares = current.squares.slice()
     var styleSquare = this.state.styleSquare.slice()
-    const lastMove = [i % 3, Math.floor(i / 3)]
+    const lastMove = [i % this.state.size, Math.floor(i / this.state.size)]
 
-    if (calculateWinner(squares) || squares[i]) {
+    if (calculateWinner(this.state.size, squares) || squares[i]) {
       return
     }
     squares[i] = this.state.xIsNext ? "X" : "O"
@@ -112,7 +102,7 @@ class Game extends React.Component {
         }
       ]),
       stepNumber: history.length - 1,
-      
+
       xIsNext: !this.state.xIsNext,
     })
 
@@ -123,8 +113,7 @@ class Game extends React.Component {
   }
 
   onWin(winner, styleSquare) {
-    console.log(winner)
-    winner.map(item => {
+    winner?.map(item => {
       styleSquare[item] += " active-square"
       return null
     })
@@ -165,16 +154,19 @@ class Game extends React.Component {
     const history = this.state.history
     const current = history[this.state.stepNumber]
     const winner = calculateWinner(this.state.size, current?.squares)
-
-    const toggle = this.state.isAscending ? "Ascending" : "Descending"
-
-    const moves = history?.map((step, move) => {
+    const toggle = this.state.isAscending ? "Ascending Order" : "Descending Order"
+    const moves = history?.map((items, move) => {
       if (this.state.isAscending) {
         move = history.length - 1 - move
       }
-
       const desc = move ?
-        'Go to move #' + move + ' at position (' + history[move].lastMove.toString() + ')' :
+        <div style={{ textAlign: 'start' }}>
+          Go to move #{move}
+          <br />
+          X: {history[move].lastMove[0]}, Y: {history[move].lastMove[1]}
+          <br /> Player: {current.squares[history[move].lastMove[0] + history[move].lastMove[1] * this.state.size]}
+        </div>
+        :
         'Go to game start'
       if (move === this.state.stepNumber) {
         return (
@@ -189,64 +181,120 @@ class Game extends React.Component {
           </li>
         )
       }
-
     })
-
     let status
     if (winner) {
       status = "Winner: " + current?.squares[winner[0]]
     } else if (!current?.squares?.includes(null)) {
-      status = "Its a draw!"
+      status = "Draw!"
     } else {
       status = "Next player: " + (this.state.xIsNext ? "X" : "O")
     }
-
-    return (<>
-      <div className="btn-wrapper">
-        <button onClick={() => this.createMap(this.state.size + 1)}>Increase the size of the board by 1 unit</button>
-        <button onClick={() => this.createMap(this.state.size - 1)}>Decrease the size of the board by 1 unit (min 3)</button>
-      </div>
-      <div className="game">
-        <div className="game-board">
-          <Board
-            map={this.state.map}
-            squares={current?.squares}
-            onClick={i => this.handleClick(i)}
-            styleSquare={this.state.styleSquare}
-          />
+    return (
+      <>
+        <div className="game">
+          <div className="game-info">
+            <div className="status">{status}</div>
+            <p>Current size: {this.state.size}x{this.state.size}</p>
+            <div className="btn-wrapper">
+              <button onClick={() => this.createMap(this.state.size + 1)}>Increase the size of the board by 1 unit</button>
+              <button onClick={() => this.createMap(this.state.size - 1)}>Decrease the size of the board by 1 unit (min 3)</button>
+              <button onClick={() => this.createMap(3)}>Reset size</button>
+              <button onClick={this.toggle}>{toggle}</button>
+            </div>
+            <ol className="wrapper-history">{moves}</ol>
+          </div>
+          <div className="game-board">
+            <Board
+              map={this.state.map}
+              squares={current?.squares}
+              onClick={i => this.handleClick(i)}
+              styleSquare={this.state.styleSquare}
+            />
+          </div>
         </div>
-        <div className="game-info">
-          <div className="status">{status}</div>
-          <button onClick={this.toggle}>{toggle}</button>
-          <ol>{moves}</ol>
-        </div>
-      </div></>
+      </>
     )
   }
 }
 
-
 ReactDOM.render(<Game />, document.getElementById("root"))
 
 function calculateWinner(size = 3, squares) {
-  console.log(squares)
-  if (!squares) return null
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ]
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i]
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return [a, b, c]
+  const numOfStreaks = size < 5 ? 3 : 5 // board size < 5x5 => rule is 3 || 5 
+  const leng = size * size
+  const winPostions = []
+  for (let position = 0; position < leng; position++) {
+    if (!squares[position]) {
+      continue
+    }
+    let isWin = true
+    const winPostions = [position]
+    for (let point = 1; point < numOfStreaks; point++) {
+      if (
+        position + point * (size + 1) > squares.length ||
+        squares[position] !== squares[position + point * (size + 1)]
+      ) {
+        isWin = false
+        break
+      }
+      winPostions.push(position + point * (size + 1))
+    }
+    if (isWin) return winPostions
+  }
+  for (let position = 0; position < leng; position++) {
+    if (!squares[position] || position % size < (numOfStreaks - 1)) {
+      continue
+    }
+    let isWin = true
+    const winPostions = [position]
+    for (let point = 1; point < numOfStreaks; point++) {
+      let nextPosition = position + point * (size - 1)
+      if (nextPosition < 0 || squares[position] !== squares[nextPosition]) {
+        isWin = false
+        break
+      }
+      winPostions.push(nextPosition)
+    }
+    if (isWin) return winPostions
+  }
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size - numOfStreaks + 1; j++) {
+      const position = i * size + j
+      if (!squares[position]) {
+        continue
+      }
+      let isWin = true
+      const winPostions = [position]
+      for (let point = 1; point < numOfStreaks; point++) {
+        if (squares[position] !== squares[position + point]) {
+          isWin = false
+          break
+        }
+        winPostions.push(position + point)
+      }
+      if (isWin) return winPostions
     }
   }
+  for (let j = 0; j < size - numOfStreaks + 1; j++) {
+    for (let i = 0; i < size; i++) {
+      const position = j * size + i
+      if (!squares[position]) {
+        continue
+      }
+      let isWin = true
+      const winPostions = [position]
+      for (let point = 1; point < numOfStreaks; point++) {
+        if (squares[position] !== squares[position + point * size]) {
+          isWin = false
+          break
+        }
+        winPostions.push(position + point * size)
+      }
+      if (isWin) return winPostions
+    }
+  }
+
   return null
 }
 
