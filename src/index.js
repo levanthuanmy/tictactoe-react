@@ -82,10 +82,10 @@ class Game extends React.Component {
   }
 
   handleClick(i) {
-    var history = this.state.history.slice(0, this.state.stepNumber + 1)
+    let history = this.state.history.slice(0, this.state.stepNumber + 1)
     const current = history[history.length - 1]
     const squares = current.squares.slice()
-    var styleSquare = this.state.styleSquare.slice()
+    let styleSquare = this.state.styleSquare.slice()
     const lastMove = [i % this.state.size, Math.floor(i / this.state.size)]
 
     if (calculateWinner(this.state.size, squares) || squares[i]) {
@@ -123,10 +123,10 @@ class Game extends React.Component {
   }
 
   jumpTo(step) {
-    var history = this.state.history.slice(0, step + 1)
+    let history = this.state.history.slice(0, step + 1)
     const current = history[history.length - 1]
     const squares = current.squares.slice()
-    var styleSquare = this.state.styleSquare.slice()
+    let styleSquare = this.state.styleSquare.slice()
     const winner = calculateWinner(this.state.size, squares)
 
     this.setState({
